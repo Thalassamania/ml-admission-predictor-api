@@ -8,7 +8,7 @@ The data and feature engineering are the same as in the earlier lab, with only m
 - Imputer: replaces missing values with the mean of the corresponding column.
 - Standard scaler: scales numerical features so that models that assume normally distributed inputs (e.g., linear or polynomial regression) perform better.
 
-The notebooks in the `Pipeline/` folder explore additional steps such as `ordinal_encoder` and `OneHotEncoder` for categorical variables. These are demonstrated for completeness but are not required because all features in the admissions dataset are numeric.
+The notebooks in the `pipelines/notebooks/` folder explore additional steps such as `ordinal_encoder` and `OneHotEncoder` for categorical variables. These are demonstrated for completeness but are not required because all features in the admissions dataset are numeric.
 
 ## Models and Selection
 Several regression algorithms were evaluated, including decision trees, random forests, robust regression, Gaussian process regression, support-vector regression, and polynomial regression. After experimentation, the team selected polynomial regression of degree 12 because it achieved the best performance on the training data. Three variants of this model are packaged as separate pipelines (Model 1, Model 2, and Model 3). Each pipeline is persisted to disk with `joblib` and loaded by the API on demand.
@@ -36,7 +36,7 @@ This command launches the FastAPI application using Uvicorn. By default it serve
 
 5. Open the interactive documentation at `http://127.0.0.1:8000/docs`. FastAPI automatically generates Swagger UI where you can explore and test each endpoint.
 
-If any of the models return poor predictions (e.g., because the persistent pipelines are missing), first execute the Jupyter notebooks under `Pipeline/` to train the models and generate the `.joblib` artifacts.
+If any of the models return poor predictions (e.g., because the persistent pipelines are missing), first execute the Jupyter notebooks under `pipelines/notebooks/` to train the models and generate the `.joblib` artifacts.
 
 ## API Endpoints
 The API exposes endpoints for each of the three models. Replace `{i}` with 1, 2, or 3 depending on which model you want to use.
@@ -68,7 +68,7 @@ Defines the input schema for prediction endpoints. It contains numerical feature
 Extends `DataModel` by including an additional `Admission_Points` field (the target). This model is used when retraining a pipeline via `/trainModel{i}`.
 
 ## Pipeline and Experiments
-The Jupyter notebooks in the `Pipeline/` folder document the preprocessing and model selection process. The notebooks explore several regression algorithms and hyperparameters, ultimately selecting a 12-degree polynomial regression model because it consistently produced the highest explained variance scores. The notebooks also record the values of various evaluation metrics so you can reproduce the selection process.
+The Jupyter notebooks in the `pipelines/notebooks/` folder document the preprocessing and model selection process. The notebooks explore several regression algorithms and hyperparameters, ultimately selecting a 12-degree polynomial regression model because it consistently produced the highest explained variance scores. The notebooks also record the values of various evaluation metrics so you can reproduce the selection process.
 
 ## Conclusion
 This project demonstrates how to take a machine-learning pipeline from exploration to production. By wrapping the trained models in a FastAPI service and using Pydantic for validation, the API provides a simple interface for making predictions, retraining models, and inspecting model performance. The final polynomial regression model achieved an explained variance score close to 0.99 on the training data, indicating that the features used are highly predictive of admission outcomes. While there is always room for further experimentation and additional data, this pipeline and API serve as a solid foundation for decision support in admissions processes.

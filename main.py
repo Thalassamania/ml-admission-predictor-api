@@ -62,7 +62,7 @@ def make_predictions(dataModel : list[DataModel]):
 
 @app.post("/predictionsModel3")
 def make_predictions(dataModel : list[DataModel]):
-   model = Model2()
+   model = Model3()
    all_data = []
    i = 0
    for data in dataModel:
@@ -79,8 +79,8 @@ def train_M1 (dataModel : list[DataModel_train]):
    X = df2.drop('Admission_Points', axis = 1)
    y = df2['Admission_Points']
    model.train(X,y)
-   filename = 'Pipeline/PipelineM1.joblib'
-   dump(model, filename)
+   filename = 'pipelines/artifacts/polynomial/PipelineM1.joblib'
+   dump(model.model, filename)
    rta = model.score()
    return rta
 
@@ -91,8 +91,8 @@ def train_M2 (dataModel : list[DataModel_train]):
    X = df2.drop('Admission_Points', axis = 1)
    y = df2['Admission_Points']
    model.train(X,y)
-   filename = 'Pipeline/PipelineM2.joblib'
-   dump(model, filename)
+   filename = 'pipelines/artifacts/polynomial/PipelineM2.joblib'
+   dump(model.model, filename)
    rta = model.score()
    return rta
 
@@ -102,9 +102,9 @@ def train_M3 (dataModel : list[DataModel_train]):
    df2 = pd.DataFrame([x.dict() for x in dataModel])
    X = df2.drop('Admission_Points', axis = 1)
    y = df2['Admission_Points']
-   filename = 'Pipeline/PipelineM3.joblib'
-   dump(model, filename)
    model.train(X,y)
+   filename = 'pipelines/artifacts/polynomial/PipelineM3.joblib'
+   dump(model.model, filename)
    rta = model.score()
    return rta
 

@@ -5,7 +5,7 @@ from sklearn.metrics import mean_absolute_error
 class Model2:
 
     def __init__(self):
-        self.model = load("Pipeline/PipelineM2.joblib")
+        self.model = load("pipelines/artifacts/polynomial/PipelineM2.joblib")
     
     def model_make_predictions(self,data):
         result = self.model.predict(data)
@@ -16,7 +16,7 @@ class Model2:
         return result
     
     def score(self):
-        raw_train = pd.read_csv('Pipeline/data/train.csv')
+        raw_train = pd.read_csv('pipelines/data/train.csv')
         raw_train = raw_train.drop_duplicates()
         raw_train = raw_train.dropna()
         X = raw_train.drop('Admission Points', axis = 1)
