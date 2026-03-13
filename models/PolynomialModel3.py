@@ -2,10 +2,10 @@ from joblib import load
 import pandas as pd
 from sklearn.metrics import mean_absolute_error
 
-class Model1:
+class PolyDegree12Model:
 
     def __init__(self):
-        self.model = load("pipelines/artifacts/polynomial/PipelineM1.joblib")
+        self.model = load("pipelines/artifacts/polynomial/PipelinePolyDegree12.joblib")
     
     def model_make_predictions(self,data):
         result = self.model.predict(data)
