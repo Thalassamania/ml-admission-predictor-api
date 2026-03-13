@@ -2,15 +2,15 @@ from joblib import load
 import pandas as pd
 from sklearn.metrics import mean_absolute_error
 
-class Model2:
+class PolyDegree2Model:
 
     def __init__(self):
-        self.model = load("pipelines/artifacts/polynomial/PipelineM2.joblib")
+        self.model = load("pipelines/artifacts/polynomial/PipelinePolyDegree2.joblib")
     
     def model_make_predictions(self,data):
         result = self.model.predict(data)
         return result
-
+    
     def train(self, X, y):
         result = self.model.fit(X,y)
         return result
