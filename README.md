@@ -3,8 +3,8 @@
 ## Overview
 This repository exposes a FastAPI service for predicting graduate admission scores with persisted scikit-learn pipelines. The project includes:
 
-- a REST API in [main.py]
-- Pydantic request schemas in [DataModel.py] and [DataModel_Train.py]
+- a REST API in `main.py`
+- Pydantic request schemas in `DataModel.py` and `DataModel_Train.py`
 - trained model artifacts under `pipelines/artifacts/`
 - experimentation notebooks under `pipelines/notebooks/`
 
