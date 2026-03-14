@@ -1,74 +1,137 @@
 # Admission Points Prediction API
 
 ## Overview
-This project exposes a set of machine-learning models for predicting graduate admission scores through a REST API. It builds on the linear regression work of a previous laboratory and demonstrates how to prepare data, train models, and serve them via a FastAPI application.
+This repository exposes a FastAPI service for predicting graduate admission scores with persisted scikit-learn pipelines. The project includes:
 
-The data and feature engineering are the same as in the earlier lab, with only minor variable name changes. The key innovation here is the construction of a scikit-learn pipeline and its integration into a deployable service. The pipeline performs two preprocessing steps:
+- a REST API in [main.py]
+- Pydantic request schemas in [DataModel.py] and [DataModel_Train.py]
+- trained model artifacts under `pipelines/artifacts/`
+- experimentation notebooks under `pipelines/notebooks/`
 
-- Imputer: replaces missing values with the mean of the corresponding column.
-- Standard scaler: scales numerical features so that models that assume normally distributed inputs (e.g., linear or polynomial regression) perform better.
+The current API serves three models:
 
-The notebooks in the `pipelines/notebooks/` folder explore additional steps such as `ordinal_encoder` and `OneHotEncoder` for categorical variables. These are demonstrated for completeness but are not required because all features in the admissions dataset are numeric.
+- polynomial regression, degree 2
+- polynomial regression, degree 3
+- support vector regression
 
-## Models and Selection
-Several regression algorithms were evaluated, including decision trees, random forests, robust regression, Gaussian process regression, support-vector regression, and polynomial regression. After experimentation, the team selected polynomial regression of degree 12 because it achieved the best performance on the training data. Three variants of this model are packaged as separate pipelines (Model 1, Model 2, and Model 3). Each pipeline is persisted to disk with `joblib` and loaded by the API on demand.
+## Project Structure
 
-Performance was evaluated using multiple metrics. The API returns two metrics alongside each score request: explained variance score and mean absolute error (MAE). Explained variance values close to 1 indicate that the predicted and true values are almost indistinguishable, while MAE gives an average error in the scale of the original data. During model selection, the polynomial regression pipeline achieved scores above 0.9 on the explained variance metric.
+```text
+.
+|-- main.py
+|-- DataModel.py
+|-- DataModel_Train.py
+|-- models/
+|   |-- Polynomial/
+|   |   |-- PolynomialModel2.py
+|   |   `-- PolynomialModel3.py
+|   `-- SVM/
+|       `-- SVRModel.py
+|-- pipelines/
+|   |-- artifacts/
+|   |-- data/
+|   `-- notebooks/
+`-- requirements.txt
+```
 
-## Running the API
-1. Clone this repository.
-2. Open the project in your preferred IDE.
-3. Install dependencies:
+## Installation
+Install dependencies with:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-You may also install them manually with `pip install fastapi uvicorn scikit-learn pandas joblib`.
-
-4. Start the API locally:
+## Running the API
+Start the development server with:
 
 ```bash
 uvicorn main:app --reload
 ```
 
-This command launches the FastAPI application using Uvicorn. By default it serves on `http://127.0.0.1:8000`.
+The API will be available at `http://127.0.0.1:8000` and the interactive docs at `http://127.0.0.1:8000/docs`.
 
-5. Open the interactive documentation at `http://127.0.0.1:8000/docs`. FastAPI automatically generates Swagger UI where you can explore and test each endpoint.
+## Request Schemas
 
-If any of the models return poor predictions (e.g., because the persistent pipelines are missing), first execute the Jupyter notebooks under `pipelines/notebooks/` to train the models and generate the `.joblib` artifacts.
+### Prediction payload
+The prediction endpoints accept the fields defined in `DataModel`. Example:
+
+```json
+{
+  "serial_no": 1,
+  "gre_score": 320,
+  "toefl_score": 110,
+  "university_rating": 4,
+  "sop": 4.5,
+  "lor": 4.0,
+  "cgpa": 9.1,
+  "research": 1
+}
+```
+
+### Training payload
+The training endpoints accept the same fields plus `Admission_Points`. Example:
+
+```json
+{
+  "serial_no": 1,
+  "gre_score": 320,
+  "toefl_score": 110,
+  "university_rating": 4,
+  "sop": 4.5,
+  "lor": 4.0,
+  "cgpa": 9.1,
+  "research": 1,
+  "Admission_Points": 82.5
+}
+```
 
 ## API Endpoints
-The API exposes endpoints for each of the three models. Replace `{i}` with 1, 2, or 3 depending on which model you want to use.
 
-| Endpoint               | Method | Description                                                |
-| ---------------------- | ------ | ---------------------------------------------------------- |
-| `/predictModel{i}`     | POST   | Predicts a single admission score. Expects a JSON body     |
-|                        |        | with the input features defined in `DataModel`. Returns a  |
-|                        |        | single float representing the predicted admission points.  |
-| `/predictionsModel{i}` | POST   | Predicts admission scores for multiple inputs. Expects a   |
-|                        |        | JSON list of `DataModel` objects and returns a list of      |
-|                        |        | predictions.                                               |
-| `/trainModel{i}`       | POST   | Retrains the pipeline using new labeled data. The request  |
-|                        |        | body must be a list of `DataModel_train` objects (which     |
-|                        |        | include the target `Admission_Points`). The endpoint       |
-|                        |        | stores the updated model to the `Pipeline/` folder and     |
-|                        |        | returns updated performance metrics.                       |
-| `/scoreModel{i}`       | GET    | Returns evaluation metrics for the selected model without  |
-|                        |        | retraining. The response contains the explained variance   |
-|                        |        | score and mean absolute error.                             |
+### Single prediction
 
-The model index `{i}` allows you to compare different pipeline configurations. For example, `/predictModel1` and `/scoreModel1` operate on the first pipeline, while `/trainModel2` retrains the second pipeline.
+- `POST /polynomial/degree2`
+- `POST /polynomial/degree3`
+- `POST /svm/svr`
 
-## Data Models
-**DataModel**  
-Defines the input schema for prediction endpoints. It contains numerical features such as GRE score, TOEFL score, university rating, SOP, LOR, CGPA, and research indicator. These fields must be provided in the same order as the training data.
+Each endpoint receives one `DataModel` object and returns a single numeric prediction.
 
-**DataModel_train**  
-Extends `DataModel` by including an additional `Admission_Points` field (the target). This model is used when retraining a pipeline via `/trainModel{i}`.
+### Batch prediction
 
-## Pipeline and Experiments
-The Jupyter notebooks in the `pipelines/notebooks/` folder document the preprocessing and model selection process. The notebooks explore several regression algorithms and hyperparameters, ultimately selecting a 12-degree polynomial regression model because it consistently produced the highest explained variance scores. The notebooks also record the values of various evaluation metrics so you can reproduce the selection process.
+- `POST /polynomial/degree2/predictions`
+- `POST /polynomial/degree3/predictions`
+- `POST /svm/svr/predictions`
 
-## Conclusion
-This project demonstrates how to take a machine-learning pipeline from exploration to production. By wrapping the trained models in a FastAPI service and using Pydantic for validation, the API provides a simple interface for making predictions, retraining models, and inspecting model performance. The final polynomial regression model achieved an explained variance score close to 0.99 on the training data, indicating that the features used are highly predictive of admission outcomes. While there is always room for further experimentation and additional data, this pipeline and API serve as a solid foundation for decision support in admissions processes.
+Each endpoint receives a list of `DataModel` objects and returns a list of predictions.
+
+### Retraining
+
+- `POST /polynomial/degree2/train`
+- `POST /polynomial/degree3/train`
+- `POST /svm/svr/train`
+
+Each endpoint receives a list of `DataModel_train` objects, retrains the corresponding model, and writes the updated artifact to:
+
+- `pipelines/artifacts/polynomial/PipelinePolyDegree2.joblib`
+- `pipelines/artifacts/polynomial/PipelinePolyDegree3.joblib`
+- `pipelines/artifacts/SVM/PipelineSVR.joblib`
+
+### Scoring
+
+- `GET /polynomial/degree2/score`
+- `GET /polynomial/degree3/score`
+- `GET /svm/svr/score`
+
+Each score endpoint returns:
+
+- model score from scikit-learn's `Pipeline.score(...)`
+- mean absolute error on the dataset loaded by the model wrapper
+
+## Training Data and Notebooks
+The repository includes data files in `pipelines/data/` and exploratory notebooks in:
+
+- `pipelines/notebooks/polynomial/`
+- `pipelines/notebooks/SVM/`
+- `pipelines/notebooks/linear/`
+- `pipelines/notebooks/DataReview.ipynb`
+
+These notebooks are used to study preprocessing choices, compare regressors, and export `.joblib` artifacts used by the API.

@@ -9,6 +9,7 @@ class SVRModel:
     
     def model_make_predictions(self,data):
         result = self.model.predict(data)
+        self.model = load("pipelines/artifacts/SVM/PipelineSVR.joblib")
         return result
     
     def train(self, X, y):

@@ -13,10 +13,11 @@ class PolyDegree3:
     
     def train(self, X, y):
         result = self.model.fit(X,y)
+        self.model = load("pipelines/artifacts/polynomial/PipelinePolyDegree3.joblib")
         return result
     
     def score(self):
-        raw_train = pd.read_csv('pipelines/data/train.csv')
+        raw_train = pd.read_csv('pipelines/data/data.csv')
         raw_train = raw_train.drop_duplicates()
         raw_train = raw_train.dropna()
         X = raw_train.drop('Admission Points', axis = 1)

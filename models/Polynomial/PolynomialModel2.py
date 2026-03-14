@@ -1,4 +1,4 @@
-from joblib import load
+from joblib import load, dump
 import pandas as pd
 from sklearn.metrics import mean_absolute_error
 
@@ -13,6 +13,7 @@ class PolyDegree2:
     
     def train(self, X, y):
         result = self.model.fit(X,y)
+        self.model = load("pipelines/artifacts/polynomial/PipelinePolyDegree2.joblib")
         return result
     
     def score(self):
